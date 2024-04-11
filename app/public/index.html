@@ -1,0 +1,668 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Vertex AI Proxy</title>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+      line-height: 1.6;
+      max-width: 1000px;
+      margin: 0 auto;
+      padding: 20px;
+      background: #f5f5f5;
+      color: #333;
+    }
+    h1 { color: #2563eb; border-bottom: 2px solid #2563eb; padding-bottom: 10px; }
+    h2 { color: #1e40af; margin-top: 30px; }
+    h3 { color: #3b82f6; }
+    h4 { color: #6366f1; margin-top: 20px; }
+    pre {
+      background: #1e293b;
+      color: #e2e8f0;
+      padding: 15px;
+      border-radius: 8px;
+      overflow-x: auto;
+      font-size: 13px;
+    }
+    code {
+      background: #e2e8f0;
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-size: 13px;
+    }
+    pre code { background: none; padding: 0; }
+    .status {
+      background: #10b981;
+      color: white;
+      padding: 10px 20px;
+      border-radius: 8px;
+      display: inline-block;
+      margin-bottom: 20px;
+    }
+    .section {
+      background: white;
+      padding: 20px;
+      border-radius: 8px;
+      margin-bottom: 20px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 15px 0;
+    }
+    th, td {
+      border: 1px solid #e2e8f0;
+      padding: 10px;
+      text-align: left;
+    }
+    th { background: #f1f5f9; }
+    .method {
+      background: #3b82f6;
+      color: white;
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-weight: bold;
+      font-size: 12px;
+    }
+    .required { color: #dc2626; font-weight: bold; }
+    .optional { color: #6b7280; }
+    .note {
+      background: #fef3c7;
+      border-left: 4px solid #f59e0b;
+      padding: 10px 15px;
+      margin: 15px 0;
+      border-radius: 0 8px 8px 0;
+    }
+  </style>
+</head>
+<body>
+  <h1>Vertex AI Proxy API Reference</h1>
+  <div class="status">Server is running</div>
+
+  <div class="section">
+    <h2>Overview</h2>
+    <p>A passthrough proxy for accessing Claude and Gemini models on Vertex AI. Provides permanent user secret authentication instead of complex short-lived GCP access tokens.</p>
+
+    <h3>Supported Providers</h3>
+    <table>
+      <tr>
+        <th>Provider</th>
+        <th>Model Prefix</th>
+        <th>Example Models</th>
+        <th>Streaming Method</th>
+      </tr>
+      <tr>
+        <td>Claude</td>
+        <td><code>claude</code></td>
+        <td><code>claude-opus-4-5@20251101</code>, <code>claude-sonnet-4-5@20250929</code></td>
+        <td><code>:streamRawPredict</code></td>
+      </tr>
+      <tr>
+        <td>Gemini</td>
+        <td><code>gemini</code></td>
+        <td><code>gemini-2.0-flash</code>, <code>gemini-1.5-pro</code>, <code>gemini-3-pro-preview</code></td>
+        <td><code>:streamGenerateContent</code></td>
+      </tr>
+    </table>
+  </div>
+
+  <div class="section">
+    <h2>API Endpoint</h2>
+    <p><span class="method">POST</span> <code>/v1/projects/{project}/locations/{location}/publishers/{publisher}/models/{model}</code></p>
+
+    <h3>Path Parameters</h3>
+    <table>
+      <tr>
+        <th>Parameter</th>
+        <th>Description</th>
+        <th>Example</th>
+      </tr>
+      <tr>
+        <td><code>project</code></td>
+        <td>GCP project ID (can be overridden by server config)</td>
+        <td><code>my-gcp-project</code></td>
+      </tr>
+      <tr>
+        <td><code>location</code></td>
+        <td>Vertex AI region</td>
+        <td><code>global</code>, <code>us-central1</code></td>
+      </tr>
+      <tr>
+        <td><code>publisher</code></td>
+        <td>Model publisher</td>
+        <td><code>anthropic</code>, <code>google</code></td>
+      </tr>
+      <tr>
+        <td><code>model</code></td>
+        <td>Model name with optional method suffix</td>
+        <td><code>gemini-2.0-flash:streamGenerateContent</code></td>
+      </tr>
+    </table>
+
+    <h3>Authentication</h3>
+    <p>Include your user secret in the <code>Authorization</code> header:</p>
+    <pre><code>Authorization: Bearer your-secret-token</code></pre>
+  </div>
+
+  <div class="section">
+    <h2>Claude Provider API</h2>
+    <p>Uses the Anthropic Messages API format.</p>
+
+    <h3>Request Body</h3>
+    <table>
+      <tr>
+        <th>Field</th>
+        <th>Type</th>
+        <th>Required</th>
+        <th>Description</th>
+      </tr>
+      <tr>
+        <td><code>messages</code></td>
+        <td>array</td>
+        <td class="required">Yes</td>
+        <td>Array of message objects with <code>role</code> and <code>content</code></td>
+      </tr>
+      <tr>
+        <td><code>max_tokens</code></td>
+        <td>integer</td>
+        <td class="optional">No</td>
+        <td>Maximum tokens to generate (default: 8192)</td>
+      </tr>
+      <tr>
+        <td><code>system</code></td>
+        <td>string</td>
+        <td class="optional">No</td>
+        <td>System prompt</td>
+      </tr>
+      <tr>
+        <td><code>temperature</code></td>
+        <td>number</td>
+        <td class="optional">No</td>
+        <td>Sampling temperature (0-1)</td>
+      </tr>
+      <tr>
+        <td><code>tools</code></td>
+        <td>array</td>
+        <td class="optional">No</td>
+        <td>Tool definitions for function calling</td>
+      </tr>
+      <tr>
+        <td><code>tool_choice</code></td>
+        <td>object</td>
+        <td class="optional">No</td>
+        <td>Tool selection configuration</td>
+      </tr>
+      <tr>
+        <td><code>thinking</code></td>
+        <td>object</td>
+        <td class="optional">No</td>
+        <td>Extended thinking configuration</td>
+      </tr>
+    </table>
+
+    <h4>Example Request</h4>
+    <pre><code>POST /v1/projects/my-project/locations/global/publishers/anthropic/models/claude-sonnet-4-5@20250929:streamRawPredict
+Authorization: Bearer your-secret-token
+Content-Type: application/json
+
+{
+  "messages": [
+    {"role": "user", "content": "Hello, how are you?"}
+  ],
+  "max_tokens": 1024,
+  "temperature": 0.7
+}</code></pre>
+
+    <h4>Response Format (Streaming)</h4>
+    <p>SSE format with event types: <code>message_start</code>, <code>content_block_delta</code>, <code>message_delta</code>, <code>message_stop</code></p>
+  </div>
+
+  <div class="section">
+    <h2>Gemini Provider API</h2>
+    <p>Uses the Vertex AI GenerateContent format with support for function calling.</p>
+
+    <h3>Request Body</h3>
+    <table>
+      <tr>
+        <th>Field</th>
+        <th>Type</th>
+        <th>Required</th>
+        <th>Description</th>
+      </tr>
+      <tr>
+        <td><code>contents</code></td>
+        <td>array</td>
+        <td class="required">Yes</td>
+        <td>Array of content objects with <code>role</code> and <code>parts</code></td>
+      </tr>
+      <tr>
+        <td><code>generationConfig</code></td>
+        <td>object</td>
+        <td class="optional">No</td>
+        <td>Generation parameters (temperature, maxOutputTokens, etc.)</td>
+      </tr>
+      <tr>
+        <td><code>tools</code></td>
+        <td>array</td>
+        <td class="optional">No</td>
+        <td>Function declarations for function calling</td>
+      </tr>
+      <tr>
+        <td><code>toolConfig</code></td>
+        <td>object</td>
+        <td class="optional">No</td>
+        <td>Function calling configuration (mode: AUTO, ANY, NONE)</td>
+      </tr>
+      <tr>
+        <td><code>systemInstruction</code></td>
+        <td>object</td>
+        <td class="optional">No</td>
+        <td>System instruction content</td>
+      </tr>
+    </table>
+
+    <h4>Generation Config</h4>
+    <table>
+      <tr>
+        <th>Field</th>
+        <th>Type</th>
+        <th>Default</th>
+        <th>Description</th>
+      </tr>
+      <tr>
+        <td><code>maxOutputTokens</code></td>
+        <td>integer</td>
+        <td>8192</td>
+        <td>Maximum tokens to generate</td>
+      </tr>
+      <tr>
+        <td><code>temperature</code></td>
+        <td>number</td>
+        <td>1</td>
+        <td>Sampling temperature</td>
+      </tr>
+      <tr>
+        <td><code>topP</code></td>
+        <td>number</td>
+        <td>0.95</td>
+        <td>Top-p sampling</td>
+      </tr>
+      <tr>
+        <td><code>thinkingConfig</code></td>
+        <td>object</td>
+        <td>-</td>
+        <td>Extended thinking configuration</td>
+      </tr>
+    </table>
+
+    <h4>Example Request (Basic)</h4>
+    <pre><code>POST /v1/projects/my-project/locations/global/publishers/google/models/gemini-2.0-flash:streamGenerateContent
+Authorization: Bearer your-secret-token
+Content-Type: application/json
+
+{
+  "contents": [
+    {"role": "user", "parts": [{"text": "What is 2+2?"}]}
+  ],
+  "generationConfig": {
+    "temperature": 0.7,
+    "maxOutputTokens": 1024
+  }
+}</code></pre>
+
+    <h4>Example Request (Function Calling)</h4>
+    <pre><code>POST /v1/projects/my-project/locations/global/publishers/google/models/gemini-2.0-flash:streamGenerateContent
+Authorization: Bearer your-secret-token
+Content-Type: application/json
+
+{
+  "contents": [
+    {"role": "user", "parts": [{"text": "What's the weather in Tokyo?"}]}
+  ],
+  "tools": [{
+    "functionDeclarations": [{
+      "name": "get_weather",
+      "description": "Get current weather for a location",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "location": {
+            "type": "string",
+            "description": "City name"
+          }
+        },
+        "required": ["location"]
+      }
+    }]
+  }],
+  "toolConfig": {
+    "functionCallingConfig": {
+      "mode": "AUTO"
+    }
+  }
+}</code></pre>
+
+    <div class="note">
+      <strong>Note:</strong> The proxy automatically converts <code>parameters</code> to <code>parametersJsonSchema</code> format required by the GenAI SDK. Standard JSON Schema types (lowercase) are supported.
+    </div>
+
+    <h4>Response Format (Streaming)</h4>
+    <p>SSE format with <code>data:</code> prefix. Each chunk contains candidates with content parts.</p>
+    <pre><code>data: {"candidates":[{"content":{"parts":[{"text":"Hello!"}],"role":"model"}}]}</code></pre>
+
+    <h4>Function Call Response</h4>
+    <pre><code>data: {"candidates":[{"content":{"parts":[{"functionCall":{"name":"get_weather","args":{"location":"Tokyo"}}}]}}]}</code></pre>
+  </div>
+
+  <div class="section">
+    <h2>OpenAI-Compatible API</h2>
+    <p>An alternative endpoint that accepts OpenAI chat completion format. Requests are automatically translated to Claude or Gemini format based on the model name.</p>
+
+    <h3>Endpoint</h3>
+    <p><span class="method">POST</span> <code>/v1/chat/completions</code></p>
+
+    <h3>Request Body</h3>
+    <table>
+      <tr>
+        <th>Field</th>
+        <th>Type</th>
+        <th>Required</th>
+        <th>Description</th>
+      </tr>
+      <tr>
+        <td><code>model</code></td>
+        <td>string</td>
+        <td class="required">Yes</td>
+        <td>Model name (e.g., <code>claude-3-5-sonnet</code>, <code>gemini-1.5-pro</code>)</td>
+      </tr>
+      <tr>
+        <td><code>messages</code></td>
+        <td>array</td>
+        <td class="required">Yes</td>
+        <td>Array of messages with <code>role</code> and <code>content</code></td>
+      </tr>
+      <tr>
+        <td><code>stream</code></td>
+        <td>boolean</td>
+        <td class="optional">No</td>
+        <td>Enable streaming (default: false)</td>
+      </tr>
+      <tr>
+        <td><code>max_tokens</code></td>
+        <td>integer</td>
+        <td class="optional">No</td>
+        <td>Maximum tokens to generate (default: 8192)</td>
+      </tr>
+      <tr>
+        <td><code>temperature</code></td>
+        <td>number</td>
+        <td class="optional">No</td>
+        <td>Sampling temperature (0-2)</td>
+      </tr>
+      <tr>
+        <td><code>tools</code></td>
+        <td>array</td>
+        <td class="optional">No</td>
+        <td>Tool/function definitions</td>
+      </tr>
+      <tr>
+        <td><code>tool_choice</code></td>
+        <td>string|object</td>
+        <td class="optional">No</td>
+        <td><code>"auto"</code>, <code>"none"</code>, <code>"required"</code>, or specific function</td>
+      </tr>
+    </table>
+
+    <h4>Example: Basic Request</h4>
+    <pre><code>POST /v1/chat/completions
+Authorization: Bearer your-secret-token
+Content-Type: application/json
+
+{
+  "model": "claude-3-5-sonnet",
+  "messages": [
+    {"role": "system", "content": "You are a helpful assistant."},
+    {"role": "user", "content": "Hello, how are you?"}
+  ],
+  "max_tokens": 1024,
+  "stream": true
+}</code></pre>
+
+    <h4>Example: Tool Calling</h4>
+    <pre><code>POST /v1/chat/completions
+Authorization: Bearer your-secret-token
+Content-Type: application/json
+
+{
+  "model": "claude-3-5-sonnet",
+  "messages": [
+    {"role": "user", "content": "What's the weather like in Tokyo?"}
+  ],
+  "tools": [
+    {
+      "type": "function",
+      "function": {
+        "name": "get_weather",
+        "description": "Get the current weather for a location",
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "location": {
+              "type": "string",
+              "description": "City name, e.g., Tokyo, London"
+            },
+            "unit": {
+              "type": "string",
+              "enum": ["celsius", "fahrenheit"],
+              "description": "Temperature unit"
+            }
+          },
+          "required": ["location"]
+        }
+      }
+    }
+  ],
+  "tool_choice": "auto"
+}</code></pre>
+
+    <h4>Tool Call Response</h4>
+    <pre><code>{
+  "id": "chatcmpl-abc123",
+  "object": "chat.completion",
+  "created": 1699000000,
+  "model": "claude-3-5-sonnet",
+  "choices": [{
+    "index": 0,
+    "message": {
+      "role": "assistant",
+      "content": null,
+      "tool_calls": [{
+        "id": "call_xyz789",
+        "type": "function",
+        "function": {
+          "name": "get_weather",
+          "arguments": "{\"location\": \"Tokyo\", \"unit\": \"celsius\"}"
+        }
+      }]
+    },
+    "finish_reason": "tool_calls"
+  }],
+  "usage": {"prompt_tokens": 50, "completion_tokens": 20, "total_tokens": 70}
+}</code></pre>
+
+    <h4>Continuing with Tool Result</h4>
+    <pre><code>POST /v1/chat/completions
+Authorization: Bearer your-secret-token
+Content-Type: application/json
+
+{
+  "model": "claude-3-5-sonnet",
+  "messages": [
+    {"role": "user", "content": "What's the weather like in Tokyo?"},
+    {
+      "role": "assistant",
+      "content": null,
+      "tool_calls": [{
+        "id": "call_xyz789",
+        "type": "function",
+        "function": {"name": "get_weather", "arguments": "{\"location\": \"Tokyo\"}"}
+      }]
+    },
+    {
+      "role": "tool",
+      "tool_call_id": "call_xyz789",
+      "content": "{\"temperature\": 22, \"condition\": \"sunny\", \"humidity\": 45}"
+    }
+  ]
+}</code></pre>
+
+    <h4>Streaming Response Format</h4>
+    <p>SSE format compatible with OpenAI SDK:</p>
+    <pre><code>data: {"id":"chatcmpl-xxx","object":"chat.completion.chunk","created":1699000000,"model":"claude-3-5-sonnet","choices":[{"index":0,"delta":{"role":"assistant"},"finish_reason":null}]}
+
+data: {"id":"chatcmpl-xxx","object":"chat.completion.chunk","created":1699000000,"model":"claude-3-5-sonnet","choices":[{"index":0,"delta":{"content":"Hello"},"finish_reason":null}]}
+
+data: {"id":"chatcmpl-xxx","object":"chat.completion.chunk","created":1699000000,"model":"claude-3-5-sonnet","choices":[{"index":0,"delta":{},"finish_reason":"stop"}]}
+
+data: [DONE]</code></pre>
+
+    <div class="note">
+      <strong>Note:</strong> This endpoint works with both Claude and Gemini models. The model is selected based on the prefix: <code>claude-*</code> routes to Claude, <code>gemini-*</code> routes to Gemini.
+    </div>
+  </div>
+
+  <div class="section">
+    <h2>Claude Code Configuration</h2>
+    <p>Add to <code>~/.claude/settings.json</code> on the client machine:</p>
+    <pre><code>{
+  "env": {
+    "CLAUDE_CODE_USE_VERTEX": "1",
+    "ANTHROPIC_VERTEX_BASE_URL": "http://PROXY_IP:3030/v1",
+    "ANTHROPIC_VERTEX_PROJECT_ID": "your-gcp-project-id",
+    "ANTHROPIC_AUTH_TOKEN": "your-proxy-secret",
+    "CLOUD_ML_REGION": "global",
+    "CLAUDE_CODE_SKIP_VERTEX_AUTH": "1"
+  },
+  "model": "claude-opus-4-5@20251101"
+}</code></pre>
+  </div>
+
+  <div class="section">
+    <h2>Server Configuration</h2>
+
+    <h3>config/default.json</h3>
+    <pre><code>{
+  "host": "0.0.0.0",
+  "port": 3030,
+  "users": [
+    { "username": "user", "secret": "your-secret-token" }
+  ],
+  "vertex": {
+    "location": "global",
+    "project": "your-gcp-project-id",
+    "useClientParams": false
+  }
+}</code></pre>
+
+    <table>
+      <tr>
+        <th>Field</th>
+        <th>Description</th>
+      </tr>
+      <tr>
+        <td><code>users</code></td>
+        <td>Array of authorized users with username and secret</td>
+      </tr>
+      <tr>
+        <td><code>vertex.project</code></td>
+        <td>Default GCP project ID</td>
+      </tr>
+      <tr>
+        <td><code>vertex.location</code></td>
+        <td>Default Vertex AI region</td>
+      </tr>
+      <tr>
+        <td><code>vertex.useClientParams</code></td>
+        <td>If true, use project/location from URL instead of config</td>
+      </tr>
+    </table>
+
+    <h3>Environment Variables</h3>
+    <table>
+      <tr>
+        <th>Variable</th>
+        <th>Description</th>
+      </tr>
+      <tr>
+        <td><code>NODE_ENV</code></td>
+        <td>Set to <code>development</code> for detailed error messages</td>
+      </tr>
+      <tr>
+        <td><code>LOG_LEVEL</code></td>
+        <td>Logging level: debug, info, warn, error</td>
+      </tr>
+      <tr>
+        <td><code>GOOGLE_APPLICATION_CREDENTIALS</code></td>
+        <td>Path to service account JSON (default: config/vertex-ai.json)</td>
+      </tr>
+    </table>
+  </div>
+
+  <div class="section">
+    <h2>Error Responses</h2>
+    <table>
+      <tr>
+        <th>Status</th>
+        <th>Error</th>
+        <th>Description</th>
+      </tr>
+      <tr>
+        <td>401</td>
+        <td>Authorization header required</td>
+        <td>Missing Authorization header</td>
+      </tr>
+      <tr>
+        <td>401</td>
+        <td>Invalid token</td>
+        <td>Token doesn't match any configured user secret</td>
+      </tr>
+      <tr>
+        <td>400</td>
+        <td>Unsupported model</td>
+        <td>Model prefix not recognized (must start with claude or gemini)</td>
+      </tr>
+      <tr>
+        <td>500</td>
+        <td>Server configuration error</td>
+        <td>Missing users or vertex configuration</td>
+      </tr>
+    </table>
+    <p>All error responses include a <code>requestId</code> for debugging.</p>
+  </div>
+
+  <div class="section">
+    <h2>Quick Start</h2>
+    <pre><code># 1. Authenticate with Google Cloud
+gcloud auth application-default login
+
+# 2. Configure config/default.json with your settings
+
+# 3. Start the server
+docker-compose up -d
+
+# 4. View logs
+docker-compose logs -f
+
+# 5. Test the API
+curl -X POST "http://localhost:3030/v1/projects/my-project/locations/global/publishers/google/models/gemini-2.0-flash" \
+  -H "Authorization: Bearer your-secret-token" \
+  -H "Content-Type: application/json" \
+  -d '{"contents":[{"role":"user","parts":[{"text":"Hello!"}]}]}'</code></pre>
+  </div>
+
+</body>
+</html>

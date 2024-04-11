@@ -1,0 +1,15 @@
+services:
+  vertex-ai-proxy:
+    build: .
+    ports:
+      - "3030:3030"
+      - "1455:1455"   # OpenAI OAuth callback
+      - "8085:8085"   # Google OAuth callback
+    volumes:
+      - ./config:/usr/src/app/config
+      - ~/.config/gcloud/application_default_credentials.json:/gcloud/adc.json:ro
+    environment:
+      - GOOGLE_APPLICATION_CREDENTIALS=/gcloud/adc.json
+      - NODE_ENV=development
+      - LOG_LEVEL=debug
+    restart: unless-stopped

@@ -1,0 +1,96 @@
+{
+  "name": "vertex-ai-proxy",
+  "description": "This project provides a simplified API proxy for accessing Google Cloud Vertex AI, specifically for interacting with large language models like Gemini. ",
+  "version": "0.0.1",
+  "homepage": "",
+  "private": true,
+  "keywords": [
+    "feathers"
+  ],
+  "author": {
+    "name": "ShinChven",
+    "email": "shinchven@gmail.com"
+  },
+  "repository": {
+    "url": "https://github.com/ShinChven/vertex-ai-proxy.git"
+  },
+  "contributors": [],
+  "bugs": {},
+  "engines": {
+    "node": ">= 18.18.0"
+  },
+  "feathers": {
+    "language": "ts",
+    "packager": "npm",
+    "database": "other",
+    "framework": "express",
+    "transports": [
+      "rest",
+      "websockets"
+    ],
+    "schema": false
+  },
+  "directories": {
+    "lib": "src",
+    "test": "test"
+  },
+  "main": "lib/index",
+  "scripts": {
+    "dev": "nodemon -x ts-node src/index.ts",
+    "compile": "shx rm -rf lib/ && tsc",
+    "start": "NODE_ENV=production node lib",
+    "prettier": "npx prettier \"**/*.ts\" --write",
+    "mocha": "cross-env NODE_ENV=test mocha test/ --require tsx --recursive --extension .ts --exit",
+    "test": "npm run mocha",
+    "bundle:client": "npm run compile && npm pack --pack-destination ./public",
+    "release": "npm run compile"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.78.0",
+    "@anthropic-ai/vertex-sdk": "^0.14.0",
+    "@feathersjs/adapter-commons": "^5.0.24",
+    "@feathersjs/authentication": "^5.0.24",
+    "@feathersjs/authentication-client": "^5.0.24",
+    "@feathersjs/authentication-local": "^5.0.24",
+    "@feathersjs/configuration": "^5.0.24",
+    "@feathersjs/errors": "^5.0.24",
+    "@feathersjs/express": "^5.0.24",
+    "@feathersjs/feathers": "^5.0.24",
+    "@feathersjs/schema": "^5.0.24",
+    "@feathersjs/socketio": "^5.0.24",
+    "@feathersjs/socketio-client": "^5.0.24",
+    "@feathersjs/transport-commons": "^5.0.24",
+    "@google/genai": "^1.32.0",
+    "bcryptjs": "^2.4.3",
+    "compression": "^1.7.4",
+    "fs-extra": "^11.2.0",
+    "google-auth-library": "^10.6.2",
+    "undici": "^7.16.0",
+    "winston": "^3.13.0"
+  },
+  "devDependencies": {
+    "@feathersjs/cli": "^5.0.24",
+    "@feathersjs/rest-client": "^5.0.24",
+    "@types/bcryptjs": "^2.4.6",
+    "@types/chai": "^5.2.3",
+    "@types/fs-extra": "^11.0.4",
+    "@types/mocha": "^10.0.6",
+    "@types/node": "^20.12.5",
+    "@types/sinon": "^21.0.0",
+    "@types/supertest": "^6.0.3",
+    "axios": "^1.6.8",
+    "chai": "^6.2.1",
+    "cross-env": "^10.1.0",
+    "less": "^4.2.0",
+    "mocha": "^10.4.0",
+    "nock": "^14.0.10",
+    "nodemon": "^3.1.0",
+    "prettier": "^3.2.5",
+    "shx": "^0.3.4",
+    "sinon": "^21.0.0",
+    "supertest": "^7.1.4",
+    "ts-node": "^10.9.2",
+    "tsx": "^4.21.0",
+    "typescript": "^5.4.4"
+  }
+}

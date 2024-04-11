@@ -1,0 +1,18 @@
+{
+  "host": "0.0.0.0",
+  "port": 3030,
+  "public": "./public/",
+  "origins": "*",
+  "deviceId": "4c526cfcce1f0db383f585b94ceae549baf3c29188b0e501fe2419deaac0fcbc",
+  "users": [
+    {
+      "username": "user",
+      "secret": "0524lijinyang!Aa"
+    }
+  ],
+  "vertex": {
+    "location": "global",
+    "project": "spotify-claude-code-trial",
+    "useClientParams": true
+  }
+}

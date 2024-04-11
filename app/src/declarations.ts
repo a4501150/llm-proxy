@@ -1,0 +1,49 @@
+// For more information about this file see https://dove.feathersjs.com/guides/cli/typescript.html
+import { HookContext as FeathersHookContext, NextFunction } from '@feathersjs/feathers'
+import { Application as FeathersApplication } from '@feathersjs/express'
+
+// User authentication configuration
+export interface UserConfig {
+  username: string
+  secret: string
+}
+
+// Vertex AI configuration
+export interface VertexConfig {
+  project: string
+  location: string
+  useClientParams?: boolean
+}
+
+// Application configuration type matching config/default.json
+interface ApplicationConfiguration {
+  host: string
+  port: number
+  public: string
+  origins: string[]
+  deviceId?: string
+  users: UserConfig[]
+  vertex: VertexConfig
+}
+
+export { NextFunction }
+
+// The types for app.get(name) and app.set(name)
+// eslint-disable-next-line @typescript-eslint/no-empty-interface
+export interface Configuration extends ApplicationConfiguration {}
+
+// A mapping of service names to types. Will be extended in service files.
+// eslint-disable-next-line @typescript-eslint/no-empty-interface
+export interface ServiceTypes {}
+
+// The application instance type that will be used everywhere else
+export type Application = FeathersApplication<ServiceTypes, Configuration>
+
+// The context for hook functions - can be typed with a service class
+export type HookContext<S = any> = FeathersHookContext<Application, S>
+
+declare global {
+  interface Window {
+    __INITIAL_DATA__: any // Replace `any` with the actual type of your data
+  }
+}
