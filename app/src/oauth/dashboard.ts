@@ -78,7 +78,7 @@ function renderPage(statuses: ProviderStatus[]): string {
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body {
       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-      background: #1a1a2e;
+      background: #10161d;
       color: #e0e0e0;
       min-height: 100vh;
       padding: 2rem;
@@ -97,7 +97,7 @@ function renderPage(statuses: ProviderStatus[]): string {
       margin: 0 auto;
     }
     .card {
-      background: #16213e;
+      background: #161d27;
       border-radius: 8px;
       padding: 1.5rem;
     }
@@ -142,23 +142,23 @@ function renderPage(statuses: ProviderStatus[]): string {
       font-weight: 500;
     }
     .login-btn {
-      background: #0d47a1;
-      color: #e0e0e0;
+      color: #1a1206;
+      background: #e8a33d;
     }
     .login-btn:hover {
-      background: #1565c0;
+      background: #f0b355;
     }
     .reauth-btn {
-      background: #4a4a00;
+      background: #24303e;
       color: #e0e0e0;
     }
     .reauth-btn:hover {
-      background: #6a6a00;
+      background: #2f3e50;
     }
     .paste-section {
       margin-top: 1rem;
       padding-top: 0.75rem;
-      border-top: 1px solid #2a2a4a;
+      border-top: 1px solid #2a333f;
     }
     .paste-hint {
       font-size: 0.8rem;
@@ -172,16 +172,16 @@ function renderPage(statuses: ProviderStatus[]): string {
     .paste-input {
       flex: 1;
       padding: 0.4rem 0.6rem;
-      border: 1px solid #2a2a4a;
+      border: 1px solid #2a333f;
       border-radius: 4px;
-      background: #1a1a2e;
+      background: #10161d;
       color: #e0e0e0;
       font-size: 0.8rem;
       font-family: monospace;
     }
     .paste-input:focus {
       outline: none;
-      border-color: #0d47a1;
+      border-color: #e8a33d;
     }
     .submit-btn {
       background: #2e7d32;
@@ -202,15 +202,15 @@ function renderPage(statuses: ProviderStatus[]): string {
       min-height: 1em;
       word-break: break-word;
     }
-    .paste-status.success { color: #4ecca3; }
-    .paste-status.error { color: #e57373; }
+    .paste-status.success { color: #57d9a3; }
+    .paste-status.error { color: #e06c75; }
     .paste-status.pending { color: #9e9e9e; }
     .paste-status .raw {
       display: block;
       margin-top: 0.4rem;
       padding: 0.4rem 0.6rem;
-      background: #0e1726;
-      border: 1px solid #2a2a4a;
+      background: #10161d;
+      border: 1px solid #2a333f;
       border-radius: 4px;
       color: #b0b0b0;
       font-family: ui-monospace, SFMono-Regular, Menlo, monospace;

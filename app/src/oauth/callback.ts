@@ -6,9 +6,9 @@ import type { OAuthProviderId } from '../shared/oauth/types.js'
 const SUCCESS_HTML = (providerName: string) => `<!DOCTYPE html>
 <html>
 <head><title>OAuth Success</title></head>
-<body style="font-family: system-ui, sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; background: #1a1a2e; color: #e0e0e0;">
-  <div style="text-align: center; padding: 2rem; background: #16213e; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.3);">
-    <h1 style="color: #4ecca3;">Authentication Successful</h1>
+<body style="font-family: system-ui, sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; background: #10161d; color: #e0e0e0;">
+  <div style="text-align: center; padding: 2rem; background: #161d27; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.3);">
+    <h1 style="color: #57d9a3;">Authentication Successful</h1>
     <p>${providerName} is now connected. You can close this tab.</p>
   </div>
 </body>
@@ -17,8 +17,8 @@ const SUCCESS_HTML = (providerName: string) => `<!DOCTYPE html>
 const ERROR_HTML = (message: string) => `<!DOCTYPE html>
 <html>
 <head><title>OAuth Error</title></head>
-<body style="font-family: system-ui, sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; background: #1a1a2e; color: #e0e0e0;">
-  <div style="text-align: center; padding: 2rem; background: #16213e; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.3);">
+<body style="font-family: system-ui, sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; background: #10161d; color: #e0e0e0;">
+  <div style="text-align: center; padding: 2rem; background: #161d27; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.3);">
     <h1 style="color: #e74c3c;">Authentication Failed</h1>
     <p>${escapeHtml(message)}</p>
   </div>
