@@ -15,6 +15,21 @@ const taskforceHandler = createReverseProxy({
   requestIdPrefix: 'taskforce'
 })
 
+/**
+ * Same passthrough for the Snipe dedicated route (/snipe/hendrix), which
+ * serves the same self-hosted models (deployment picked from the body model)
+ * with lighter gateway constraints: 900s read timeout (taskforce: 300s),
+ * two retries, and the target circuit breaker disabled — gate sheds surface
+ * as 503s instead of breaker-ejected 502s. Same VAK auth as /taskforce.
+ */
+const snipeHandler = createReverseProxy({
+  providerId: 'taskforce',
+  upstreamBaseUrl: 'https://hendrix-genai.spotify.net/snipe/hendrix',
+  stripPrefix: '/snipe',
+  requestIdPrefix: 'snipe'
+})
+
 export const setupTaskforceProxy = (app: Application): void => {
   app.use('/taskforce', taskforceHandler)
+  app.use('/snipe', snipeHandler)
 }
