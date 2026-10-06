@@ -15,7 +15,7 @@ const ROUTES: { path: string; upstream: string }[] = [
   { path: '/openai/*', upstream: 'api.openai.com' },
   { path: '/google/*', upstream: 'generativelanguage.googleapis.com' },
   { path: '/vertex-ai/*', upstream: '{location}-aiplatform.googleapis.com' },
-  { path: '/taskforce/glm-5-3[-flash]/*', upstream: 'hendrix-genai.spotify.net' },
+  { path: '/taskforce/hendrix/*', upstream: 'hendrix-genai.spotify.net (model from body)' },
   { path: '/v1/messages', upstream: 'translate to Vertex / OpenAI / Gemini' },
   { path: '/v1/chat/completions', upstream: 'translate to Vertex / Gemini' }
 ]
