@@ -29,7 +29,7 @@ async function printStartupBanner(host: string, port: number): Promise<void> {
     row(`  Claude:   /claude/*  -> api.anthropic.com`),
     row(`  OpenAI:   /openai/*  -> api.openai.com`),
     row(`  Google:   /google/*  -> generativelanguage..`),
-    row(`  Taskforce: /taskforce/glm-5-3[-flash]/* -> hendrix`),
+    row(`  Taskforce: /taskforce/*  -> hendrix-genai..`),
     row(`  Dashboard: GET /oauth`),
     `╠${border}╣`,
     row('OAuth Providers:')
