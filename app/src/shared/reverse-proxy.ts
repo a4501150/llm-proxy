@@ -2,6 +2,7 @@ import type express from 'express'
 import { Readable } from 'stream'
 import { logger } from '../logger.js'
 import { validateAuthentication } from './auth.js'
+import { captureResponseBody, logRequestBody } from './body-log.js'
 import type { OAuthProviderId, ProviderCredentials } from './oauth/types.js'
 
 // Headers to strip from the client request before forwarding
@@ -60,6 +61,7 @@ export function createReverseProxy(config: ReverseProxyConfig): express.RequestH
     const clientIP = getClientIP(req)
 
     res.setHeader('X-Request-Id', requestId)
+    captureResponseBody(res, requestId, `${config.requestIdPrefix} proxy`)
 
     // Lazy import to avoid circular dependencies
     const { tokenManager } = await import('./oauth/token-manager.js')
@@ -121,6 +123,7 @@ export function createReverseProxy(config: ReverseProxyConfig): express.RequestH
       if (hasBody) {
         const finalBody = config.modifyBody ? config.modifyBody(req.body, req) : req.body
         body = JSON.stringify(finalBody)
+        logRequestBody(`${config.requestIdPrefix} proxy`, requestId, finalBody)
       }
 
       const fetchOptions: RequestInit = {

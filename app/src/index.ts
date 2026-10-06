@@ -18,10 +18,11 @@ async function printStartupBanner(host: string, port: number): Promise<void> {
   const lines = [
     '',
     `╔${border}╗`,
-    row('Vertex AI Proxy'),
+    row('LLM Proxy'),
     row(`Listening on ${baseUrl}`),
     `╠${border}╣`,
     row('Endpoints:'),
+    row(`  Homepage: GET /  (config + logging toggles)`),
     row(`  Vertex:   POST /v1/projects/.../models/{model}`),
     row(`  Compat:   POST /v1/chat/completions`),
     row(`  Messages: POST /v1/messages  -> Vertex AI`),

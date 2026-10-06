@@ -35,35 +35,22 @@ function renderProviderCard(status: ProviderStatus): string {
   let action = ''
   if (!status.authenticated) {
     action = `<a class="btn login-btn" href="/oauth/login/${escapeHtml(status.id)}">Login</a>`
-
-    // Check if this provider uses a fixed redirect URI (needs manual paste fallback)
-    const provider = tokenManager.getProvider(status.id)
-    if (provider.fixedRedirectUri) {
-      action += `
-        <div class="paste-section">
-          <p class="paste-hint">Remote server? After login, paste the redirect URL here:</p>
-          <form data-paste-form data-provider="${escapeHtml(status.id)}" class="paste-form">
-            <input type="text" name="redirect_url" placeholder="http://localhost:.../callback?code=...&state=..." class="paste-input" />
-            <button type="submit" class="btn submit-btn">Submit</button>
-          </form>
-          <p class="paste-status" data-paste-status></p>
-        </div>`
-    }
   } else if (status.method === 'oauth') {
     action = `<a class="btn reauth-btn" href="/oauth/login/${escapeHtml(status.id)}">Re-authenticate</a>`
+  }
 
-    const provider = tokenManager.getProvider(status.id)
-    if (provider.fixedRedirectUri) {
-      action += `
-        <div class="paste-section">
-          <p class="paste-hint">Remote server? After login, paste the redirect URL here:</p>
-          <form data-paste-form data-provider="${escapeHtml(status.id)}" class="paste-form">
-            <input type="text" name="redirect_url" placeholder="http://localhost:.../callback?code=...&state=..." class="paste-input" />
-            <button type="submit" class="btn submit-btn">Submit</button>
-          </form>
-          <p class="paste-status" data-paste-status></p>
-        </div>`
-    }
+  if (!status.authenticated || status.method === 'oauth') {
+    // Manual fallback: the browser-side redirect may be unreachable (remote
+    // proxy), so accept a pasted redirect URL or just the bare code.
+    action += `
+      <div class="paste-section">
+        <p class="paste-hint">Redirect unreachable? Paste the full redirect URL or just the authorization code:</p>
+        <form data-paste-form data-provider="${escapeHtml(status.id)}" class="paste-form">
+          <input type="text" name="redirect_url" placeholder="http://localhost:.../callback?code=... or just the code" class="paste-input" />
+          <button type="submit" class="btn submit-btn">Submit</button>
+        </form>
+        <p class="paste-status" data-paste-status></p>
+      </div>`
   }
 
   return `
@@ -86,7 +73,7 @@ function renderPage(statuses: ProviderStatus[]): string {
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Vertex AI Proxy - OAuth Dashboard</title>
+  <title>LLM Proxy - OAuth Dashboard</title>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body {
@@ -233,7 +220,7 @@ function renderPage(statuses: ProviderStatus[]): string {
   </style>
 </head>
 <body>
-  <h1>Vertex AI Proxy - OAuth Dashboard</h1>
+  <h1>LLM Proxy - OAuth Dashboard</h1>
   <div class="grid">
     ${cards}
   </div>

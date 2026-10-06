@@ -3,6 +3,7 @@ import Anthropic from '@anthropic-ai/sdk'
 import express from 'express'
 import { logger } from '../logger'
 import { validateAuthentication } from '../shared/auth'
+import { captureResponseBody, logRequestBody } from '../shared/body-log'
 import { setupSSEHeaders } from '../shared/sse-utils'
 import { createClientCache } from '../shared/client-cache'
 import { sharedAgent } from '../shared/connection-pool'
@@ -72,6 +73,7 @@ export async function anthropicMessagesHandler(req: express.Request, res: expres
   const clientIP = getClientIP(req)
 
   res.setHeader('X-Request-Id', requestId)
+  captureResponseBody(res, requestId, 'anthropic messages')
 
   logger.info('Anthropic messages request', {
     requestId,
@@ -106,6 +108,7 @@ export async function anthropicMessagesHandler(req: express.Request, res: expres
 
     // Step 3: Validate request
     const body = req.body
+    logRequestBody('anthropic messages', requestId, body)
     if (!body.model || !body.messages) {
       res.status(400).json({
         type: 'error',

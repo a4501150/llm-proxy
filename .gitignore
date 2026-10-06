@@ -6,6 +6,7 @@ test/config.json
 config/vertex-ai.json
 config/oauth-credentials.json
 config/*-oauth.json
+config/runtime-overrides.json
 
 *.sqlite
 

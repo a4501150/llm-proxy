@@ -98,12 +98,25 @@ export const setupOAuthRoutes = (app: Application): void => {
     }
 
     try {
-      const url = new URL(input)
-      const code = url.searchParams.get('code')
-      const state = url.searchParams.get('state')
+      // Accept a full redirect URL (code/state in the query or the fragment,
+      // including the code#state "collect code" format), or a bare code with
+      // the state taken from the in-progress flow on the server.
+      const params = new URLSearchParams()
+      let bareCode: string | undefined
+      try {
+        const url = new URL(input)
+        for (const [key, value] of url.searchParams) params.set(key, value)
+        const fragment = url.hash.replace(/^[#?&]+/, '')
+        for (const [key, value] of new URLSearchParams(fragment)) params.set(key, value)
+      } catch {
+        bareCode = input
+      }
+
+      const code = params.get('code') ?? bareCode
+      const state = params.get('state') ?? tokenManager.getFlowState(providerId)?.state
 
       if (!code || !state) {
-        res.status(400).json({ error: 'URL must contain code and state parameters' })
+        res.status(400).json({ error: 'Paste a redirect URL containing code (and state), or a bare code' })
         return
       }
 

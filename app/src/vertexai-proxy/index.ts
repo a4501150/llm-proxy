@@ -5,6 +5,7 @@ import { GoogleAuth } from 'google-auth-library'
 import type { Application } from '../declarations.js'
 import { logger } from '../logger.js'
 import { validateAuthentication } from '../shared/auth.js'
+import { captureResponseBody, logRequestBody } from '../shared/body-log.js'
 
 // Ensure GOOGLE_APPLICATION_CREDENTIALS is set (same default as vertex/vertex-ai-proxy.ts)
 if (!process.env.GOOGLE_APPLICATION_CREDENTIALS) {
@@ -67,6 +68,7 @@ async function vertexAIProxyHandler(req: express.Request, res: express.Response)
   const clientIP = getClientIP(req)
 
   res.setHeader('X-Request-Id', requestId)
+  captureResponseBody(res, requestId, 'vertex-ai proxy')
 
   // Strip the /vertex-ai prefix to get the upstream path
   const upstreamPath = req.originalUrl.replace(/^\/vertex-ai/, '')
@@ -123,6 +125,9 @@ async function vertexAIProxyHandler(req: express.Request, res: express.Response)
     // Step 5: Build request body
     const hasBody = req.method !== 'GET' && req.method !== 'HEAD' && req.body
     const body = hasBody ? JSON.stringify(req.body) : undefined
+    if (hasBody) {
+      logRequestBody('vertex-ai proxy', requestId, req.body)
+    }
 
     const fetchOptions: RequestInit = {
       method: req.method,

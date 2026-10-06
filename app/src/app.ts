@@ -9,6 +9,8 @@ import type { Application } from './declarations'
 import { logError } from './hooks/log-error'
 import { logger } from './logger'
 import { initializeConnectionPool } from './shared/connection-pool'
+import { applyOverrides } from './shared/runtime-config'
+import { setupHomepage } from './home'
 import { setupOpenAIProxy } from './openai'
 import { setupClaudeProxy } from './claude-proxy'
 import { setupOpenAIDirectProxy } from './openai-proxy'
@@ -26,6 +28,7 @@ export async function createApp() {
   initializeConnectionPool()
 
   app.configure(configuration())
+  applyOverrides(app)
   app.use(cors())
   app.use(json({ limit: '1024mb' }))
   app.use(urlencoded({ extended: true, limit: '1024mb' }))
@@ -54,6 +57,7 @@ export async function createApp() {
   app.configure(setupVertexAIDirectProxy)
   app.configure(setupChatGPTProxy)
   app.configure(setupTaskforceProxy)
+  app.configure(setupHomepage)
 
   // Suppress favicon.ico requests to avoid noisy 404 logs
   app.use('/favicon.ico', ((_req: any, res: any) => {

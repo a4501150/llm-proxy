@@ -6,6 +6,7 @@
 import express from 'express'
 import { logger } from '../logger'
 import { validateAuthentication } from '../shared/auth'
+import { captureResponseBody, logRequestBody } from '../shared/body-log'
 import { getErrorDetails } from '../shared/errors'
 import { claudeTranslator } from './translators/claude-translator'
 import { geminiTranslator } from './translators/gemini-translator'
@@ -97,6 +98,8 @@ export async function chatCompletionsHandler(req: express.Request, res: express.
 
   // Set request ID header
   res.setHeader('X-Request-Id', requestId)
+  captureResponseBody(res, requestId, 'chat completions')
+  logRequestBody('chat completions', requestId, req.body)
 
   logger.info('OpenAI chat completions request', {
     requestId,

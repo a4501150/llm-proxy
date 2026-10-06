@@ -3,8 +3,13 @@ services:
     build: .
     ports:
       - "3030:3030"
-      - "1455:1455"   # OpenAI OAuth callback
-      - "8085:8085"   # Google OAuth callback
+      # OAuth callback relay ports: the in-container listener only exists
+      # while a login flow is running (5-minute window), and only matters
+      # when the browser is on this host — otherwise paste the redirect URL
+      # or code on the dashboard. Loopback-bound so nothing else on the LAN
+      # can reach them.
+      - "127.0.0.1:1455:1455"   # OpenAI OAuth callback
+      - "127.0.0.1:8085:8085"   # Google OAuth callback
     volumes:
       - ./config:/usr/src/app/config
       - ~/.config/gcloud/application_default_credentials.json:/gcloud/adc.json:ro
