@@ -18,7 +18,7 @@ function renderUserRows(state: PublicState): string {
         <td class="u-name">${escapeHtml(u.username)}</td>
         <td class="u-masked">${escapeHtml(u.maskedSecret)}</td>
         <td><input type="password" class="field u-secret" data-username="${escapeHtml(u.username)}" placeholder="unchanged" autocomplete="off" /></td>
-        <td><button type="button" class="btn danger user-delete">Remove</button></td>
+        <td><button type="button" class="btn danger sm user-delete">Remove</button></td>
       </tr>`
     )
     .join('\n')
@@ -67,21 +67,22 @@ function renderVertex(state: PublicState): string {
 
 function renderUsers(state: PublicState): string {
   return `
-    <div class="card">
+    <div class="card wide">
       <h2>Proxy users</h2>
       <p class="detail">Secrets are shown masked. Leave a secret blank to keep the current one.</p>
       <table class="users">
-        <thead><tr><th>Username</th><th>Secret</th><th>New secret</th><th></th></tr></thead>
+        <colgroup><col class="c-name"><col class="c-masked"><col><col class="c-act"></colgroup>
+        <thead><tr><th>Username</th><th>Secret</th><th>New secret (blank = unchanged)</th><th></th></tr></thead>
         <tbody>
           ${renderUserRows(state)}
         </tbody>
       </table>
-      <div class="row">
+      <div class="row add-user">
         <input id="new-user-name" class="field" placeholder="new username" />
         <input id="new-user-secret" class="field" placeholder="new secret" autocomplete="off" />
         <button type="button" class="btn" id="add-user">Add</button>
+        <button type="button" class="btn primary" id="save-users">Save users</button>
       </div>
-      <button type="button" class="btn primary" id="save-users">Save users</button>
     </div>`
 }
 
@@ -104,8 +105,16 @@ export function renderHomePage(state: PublicState, overrides: RuntimeOverrides):
       padding: 2rem;
     }
     h1 { text-align: center; margin-bottom: 0.5rem; font-size: 1.5rem; font-weight: 600; }
-    .subtitle { text-align: center; color: #9e9e9e; font-size: 0.85rem; margin-bottom: 1.5rem; }
+    .subtitle {
+      text-align: center;
+      color: #9e9e9e;
+      font-size: 0.85rem;
+      margin: 0 auto 1.5rem;
+      max-width: 900px;
+      line-height: 1.9;
+    }
     .subtitle a { color: #4ecca3; text-decoration: none; }
+    .subtitle code { font-size: 0.78rem; }
     .grid {
       display: grid;
       grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
@@ -114,6 +123,7 @@ export function renderHomePage(state: PublicState, overrides: RuntimeOverrides):
       margin: 0 auto;
     }
     .card { background: #16213e; border-radius: 8px; padding: 1.5rem; }
+    .card.wide { grid-column: 1 / -1; }
     .card h2 { font-size: 1.1rem; font-weight: 600; margin-bottom: 0.75rem; }
     .detail { font-size: 0.8rem; color: #9e9e9e; margin-bottom: 0.75rem; }
     .detail code { background: #0e1726; padding: 0.1rem 0.3rem; border-radius: 3px; }
@@ -143,10 +153,16 @@ export function renderHomePage(state: PublicState, overrides: RuntimeOverrides):
     .btn.primary:hover { background: #1565c0; }
     .btn.danger { background: #5a1e1e; }
     .btn.danger:hover { background: #7a2e2e; }
-    table.users { width: 100%; border-collapse: collapse; margin-bottom: 0.75rem; }
-    table.users th { text-align: left; font-size: 0.75rem; color: #9e9e9e; font-weight: 500; padding: 0.25rem; }
-    table.users td { padding: 0.25rem; font-size: 0.85rem; }
-    .u-name, .u-masked { font-family: monospace; }
+    .btn.sm { padding: 0.3rem 0.7rem; font-size: 0.78rem; }
+    table.users { width: 100%; border-collapse: collapse; margin-bottom: 0.75rem; table-layout: fixed; }
+    table.users th { text-align: left; font-size: 0.75rem; color: #9e9e9e; font-weight: 500; padding: 0.25rem 0.4rem; }
+    table.users td { padding: 0.35rem 0.4rem; font-size: 0.85rem; vertical-align: middle; }
+    table.users .u-name, table.users .u-masked { font-family: monospace; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    table.users .u-secret { width: 100%; }
+    col.c-name { width: 16%; }
+    col.c-masked { width: 14%; }
+    col.c-act { width: 12%; }
+    .add-user .field { flex: 1; min-width: 140px; }
     .secret-bar {
       max-width: 1100px;
       margin: 0 auto 1.5rem;
