@@ -4,6 +4,7 @@ import { generateCodeVerifier, generateCodeChallenge, generateState } from './pk
 import { anthropicProvider } from './providers/anthropic.js'
 import { googleProvider } from './providers/google.js'
 import { openaiProvider } from './providers/openai.js'
+import { taskforceProvider } from './providers/taskforce.js'
 import type {
   OAuthProviderConfig,
   OAuthProviderId,
@@ -289,7 +290,8 @@ export class TokenManager {
           id: provider.id,
           name: provider.name,
           authenticated: true,
-          method: 'env' as const
+          method: 'env' as const,
+          envKeyName: provider.envKeyName
         }
       }
 
@@ -342,3 +344,4 @@ export const tokenManager = new TokenManager()
 tokenManager.registerProvider(anthropicProvider)
 tokenManager.registerProvider(openaiProvider)
 tokenManager.registerProvider(googleProvider)
+tokenManager.registerProvider(taskforceProvider)

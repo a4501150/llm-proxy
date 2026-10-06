@@ -100,11 +100,14 @@ export function createReverseProxy(config: ReverseProxyConfig): express.RequestH
         }
       }
 
-      // Apply provider-specific auth headers
+      // Apply provider-specific auth headers. Env-key providers have no
+      // stored credentials, so build the headers from the resolved token
+      // either way (provider-specific beats the generic Bearer fallback).
       const provider = tokenManager.getProvider(config.providerId)
-      const authHeaders = credentials
-        ? provider.buildAuthHeaders(resolved.token, credentials)
-        : { authorization: `Bearer ${resolved.token}` }
+      const authHeaders = provider.buildAuthHeaders(
+        resolved.token,
+        credentials ?? { accessToken: resolved.token, refreshToken: '', expiresAt: 0 }
+      )
       Object.assign(upstreamHeaders, authHeaders)
 
       // Apply extra headers if configured

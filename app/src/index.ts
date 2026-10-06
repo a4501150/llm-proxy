@@ -28,6 +28,7 @@ async function printStartupBanner(host: string, port: number): Promise<void> {
     row(`  Claude:   /claude/*  -> api.anthropic.com`),
     row(`  OpenAI:   /openai/*  -> api.openai.com`),
     row(`  Google:   /google/*  -> generativelanguage..`),
+    row(`  Taskforce: /taskforce/glm-5-3[-flash]/* -> hendrix`),
     row(`  Dashboard: GET /oauth`),
     `╠${border}╣`,
     row('OAuth Providers:')
@@ -38,7 +39,7 @@ async function printStartupBanner(host: string, port: number): Promise<void> {
   for (const status of statuses) {
     let detail: string
     if (status.method === 'env') {
-      detail = `${status.name}: Using ${status.id.toUpperCase()}_API_KEY env var`
+      detail = `${status.name}: Using ${status.envKeyName ?? `${status.id.toUpperCase()}_API_KEY`} env var`
     } else if (status.authenticated) {
       const expires = status.expiresAt ? ` (expires ${status.expiresAt})` : ''
       detail = `${status.name}: Authenticated${expires}`

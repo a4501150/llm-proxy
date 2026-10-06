@@ -1,6 +1,6 @@
 // Types for multi-provider OAuth system
 
-export type OAuthProviderId = 'anthropic' | 'openai' | 'google'
+export type OAuthProviderId = 'anthropic' | 'openai' | 'google' | 'taskforce'
 
 export interface ProviderCredentials {
   accessToken: string
@@ -32,6 +32,8 @@ export interface ProviderStatus {
   name: string
   authenticated: boolean
   method: 'env' | 'oauth' | 'none'
+  /** Name of the env var consulted for env-mode auth */
+  envKeyName?: string
   expiresAt?: string // ISO string
   displayInfo?: Record<string, string>
   authorizeUrl?: string

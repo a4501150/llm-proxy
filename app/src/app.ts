@@ -16,6 +16,7 @@ import { setupGoogleDirectProxy } from './google-proxy'
 import { setupVertexAIDirectProxy } from './vertexai-proxy'
 import { setupAnthropicMessages } from './anthropic'
 import { setupChatGPTProxy } from './chatgpt-proxy'
+import { setupTaskforceProxy } from './taskforce-proxy'
 import { setupOAuthRoutes } from './oauth'
 
 const app: Application = express(feathers())
@@ -52,6 +53,7 @@ export async function createApp() {
   app.configure(setupGoogleDirectProxy)
   app.configure(setupVertexAIDirectProxy)
   app.configure(setupChatGPTProxy)
+  app.configure(setupTaskforceProxy)
 
   // Suppress favicon.ico requests to avoid noisy 404 logs
   app.use('/favicon.ico', ((_req: any, res: any) => {
