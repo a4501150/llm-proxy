@@ -36,6 +36,7 @@ app/
 │   │   ├── reverse-proxy.ts        # Generic reverse proxy factory (used by claude/openai/google proxies)
 │   │   ├── errors.ts               # Typed error handling utilities
 │   │   ├── sse-utils.ts            # SSE header setup utility
+│   │   ├── claude-attribution.ts   # Claude Code subscription fingerprint (headers, betas, user_id, billing block, xxHash64)
 │   │   ├── client-cache.ts         # Generic client cache factory
 │   │   ├── connection-pool.ts      # HTTP connection pooling
 │   │   ├── constants.ts            # Shared constants (max tokens)
@@ -121,6 +122,8 @@ Valid values: `openai`, `claude`, `google`, `vertex-ai`.
 
 3. **Claude Direct Proxy**: `/claude/*` -> `api.anthropic.com`
    - Reverse proxy using OAuth or `ANTHROPIC_API_KEY`
+   - With OAuth credentials, applies Claude Code subscription attribution (see below); POST `/v1/messages` gets `?beta=true`
+   - 429 responses carrying `anthropic-ratelimit-unified-*` rejected headers are decorated with `error.subscription_limits`
 
 4. **OpenAI Direct Proxy**: `/openai/*` -> `api.openai.com`
    - Reverse proxy using OAuth or `OPENAI_API_KEY`
@@ -168,6 +171,7 @@ The transform layer uses a Translator pattern for format conversion:
   - `gemini-translator.ts` — Anthropic ↔ Gemini format
 
 ### Other Details
+- **Claude subscription attribution** (`shared/claude-attribution.ts`): with OAuth credentials, `/claude/*` requests from non-Claude-Code clients are given a Claude Code fingerprint — `claude-cli` UA + `X-Stainless-*` headers, `x-app: cli`, ordered `anthropic-beta`, `X-Claude-Code-Session-Id`, JSON `metadata.user_id` (`device_id` is a stable per-credential id persisted in `config/anthropic-oauth.json` `extra.deviceId`), and a billing-header + identity `system` block with an xxHash64 `cch` signature. Confirmed Claude Code clients (x-app + claude-cli UA + `claude-code-20250219` beta + valid user_id) pass through untouched. API-key mode sends no attribution. The transform layer only adds the static CLI headers (`TRANSFORM_LAYER_CLI_HEADERS`). Ported from CLIProxyAPI; the cch normalization (blank model, drop max_tokens/fallbacks/fallback_credit_token) is a best-effort match and unverified against upstream.
 - **Logging**: Request/response logging with timestamps, request IDs, and duration
 - **Error Handling**: Typed error utilities in `shared/errors.ts` for safe error extraction
 - **Reverse Proxy**: Generic `createReverseProxy()` factory handles header stripping, auth injection, streaming, and auto-retry on 401/403 with token refresh
@@ -178,6 +182,7 @@ The transform layer uses a Translator pattern for format conversion:
 - `users`: Array of `{username, secret}` for authentication
 - `vertex.project`: Google Cloud Project ID (used by vertex-ai provider in transform layer)
 - `vertex.location`: Vertex AI region (e.g., `global`, `us-central1`)
+- `claudeAttribution`: Subscription attribution for the Claude proxy — `enabled`, `userAgent`, `anthropicBetaStrip`/`anthropicBetaAppend` (applied to the final beta header), `injectSystemBlocks`, `signBillingCch`, `clientRequestId` (`on`/`off`)
 
 ## Environment Variables
 

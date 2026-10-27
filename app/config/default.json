@@ -14,5 +14,14 @@
   "vertex":{
     "location": "",
     "project": ""
+  },
+  "claudeAttribution": {
+    "enabled": true,
+    "userAgent": "claude-cli/2.1.280 (external, cli)",
+    "anthropicBetaStrip": [],
+    "anthropicBetaAppend": [],
+    "injectSystemBlocks": true,
+    "signBillingCch": true,
+    "clientRequestId": "on"
   }
 }

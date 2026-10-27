@@ -42,6 +42,10 @@ export interface ReverseProxyConfig {
   modifyBody?: (body: any, req: express.Request) => any
   /** Optional: add extra headers beyond the provider's auth headers */
   extraHeaders?: (req: express.Request, credentials: ProviderCredentials) => Record<string, string>
+  /** Optional: rewrite the upstream path (e.g., append ?beta=true to /v1/messages) */
+  mapUpstreamPath?: (method: string, upstreamPath: string) => string
+  /** Optional: rewrite upstream error response bodies (status >= 400) before relaying */
+  transformErrorResponse?: (status: number, headers: Headers, bodyText: string) => string
   /** Prefix for request IDs (e.g., 'claude', 'openai', 'google') */
   requestIdPrefix: string
 }
@@ -66,7 +70,10 @@ export function createReverseProxy(config: ReverseProxyConfig): express.RequestH
     // Lazy import to avoid circular dependencies
     const { tokenManager } = await import('./oauth/token-manager.js')
 
-    const upstreamPath = req.originalUrl.replace(stripPrefixRegex, '')
+    const rawUpstreamPath = req.originalUrl.replace(stripPrefixRegex, '')
+    const upstreamPath = config.mapUpstreamPath
+      ? config.mapUpstreamPath(req.method, rawUpstreamPath)
+      : rawUpstreamPath
     const upstreamUrl = `${config.upstreamBaseUrl}${upstreamPath}`
 
     logger.info(`${config.requestIdPrefix} proxy request`, {
@@ -203,6 +210,24 @@ export function createReverseProxy(config: ReverseProxyConfig): express.RequestH
           }
           return
         }
+      }
+
+      // Step 5b: Buffer and transform upstream error responses when configured
+      if (upstream.status >= 400 && config.transformErrorResponse) {
+        const errorBody = await upstream.text()
+        const transformed = config.transformErrorResponse(upstream.status, upstream.headers, errorBody)
+        res.status(upstream.status)
+        const contentType = upstream.headers.get('content-type')
+        if (contentType) res.setHeader('Content-Type', contentType)
+        res.send(transformed)
+
+        logger.info(`${config.requestIdPrefix} proxy request completed`, {
+          requestId,
+          duration: `${Date.now() - startTime}ms`,
+          path: upstreamPath,
+          status: upstream.status
+        })
+        return
       }
 
       // Step 6: Forward response headers

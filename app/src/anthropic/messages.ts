@@ -9,6 +9,7 @@ import { createClientCache } from '../shared/client-cache'
 import { sharedAgent } from '../shared/connection-pool'
 import { getErrorDetails } from '../shared/errors'
 import { tokenManager } from '../shared/oauth/token-manager.js'
+import { TRANSFORM_LAYER_CLI_HEADERS } from '../shared/claude-attribution.js'
 import type { ResolvedToken } from '../shared/oauth/types.js'
 import type { LLMProvider } from '../openai/translators/types'
 import { VALID_PROVIDERS } from '../openai/translators/types'
@@ -44,7 +45,7 @@ function getOrCreateDirectClient(resolved: ResolvedToken): Anthropic {
     directClient = new Anthropic({
       apiKey: '',
       authToken: resolved.token,
-      defaultHeaders: { 'anthropic-beta': 'oauth-2025-04-20' }
+      defaultHeaders: TRANSFORM_LAYER_CLI_HEADERS
     })
   }
   directAuthMode = resolved.type

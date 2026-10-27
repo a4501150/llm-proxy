@@ -38,6 +38,7 @@ import { createClientCache } from '../../shared/client-cache'
 import { DEFAULT_MAX_TOKENS } from '../../shared/constants'
 import { getErrorDetails } from '../../shared/errors'
 import { tokenManager } from '../../shared/oauth/token-manager.js'
+import { TRANSFORM_LAYER_CLI_HEADERS } from '../../shared/claude-attribution.js'
 import type { ResolvedToken } from '../../shared/oauth/types.js'
 
 // Client cache for Vertex AI - reuse the same pattern as claude-provider
@@ -72,7 +73,7 @@ function getOrCreateDirectClient(resolved: ResolvedToken): Anthropic {
     directClient = new Anthropic({
       apiKey: '',
       authToken: resolved.token,
-      defaultHeaders: { 'anthropic-beta': 'oauth-2025-04-20' }
+      defaultHeaders: TRANSFORM_LAYER_CLI_HEADERS
     })
   }
   directAuthMode = resolved.type

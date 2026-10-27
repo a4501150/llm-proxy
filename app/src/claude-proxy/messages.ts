@@ -3,6 +3,7 @@ import Anthropic from '@anthropic-ai/sdk'
 import { logger } from '../logger'
 import { validateAuthentication } from '../shared/auth'
 import { tokenManager } from '../shared/oauth/token-manager.js'
+import { TRANSFORM_LAYER_CLI_HEADERS } from '../shared/claude-attribution.js'
 import type { ResolvedToken } from '../shared/oauth/types.js'
 import { setupSSEHeaders } from '../shared/sse-utils'
 import { getErrorDetails } from '../shared/errors'
@@ -27,7 +28,7 @@ function getOrCreateClient(resolved: ResolvedToken): Anthropic {
     cachedClient = new Anthropic({
       apiKey: '',
       authToken: resolved.token,
-      defaultHeaders: { 'anthropic-beta': 'oauth-2025-04-20' }
+      defaultHeaders: TRANSFORM_LAYER_CLI_HEADERS
     })
   }
   cachedAuthMode = resolved.type

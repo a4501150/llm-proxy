@@ -99,7 +99,8 @@ export function getAnthropicProfile(credentials: ProviderCredentials): Anthropic
 }
 
 /**
- * Build metadata.user_id matching Claude Code's format.
+ * Build metadata.user_id matching current Claude Code's JSON-string format:
+ * {"device_id":"<64-hex>","account_uuid":"<uuid>","session_id":"<uuid>"}
  */
 export function buildMetadataUserId(
   credentials: ProviderCredentials,
@@ -108,5 +109,9 @@ export function buildMetadataUserId(
 ): string | null {
   const profile = getAnthropicProfile(credentials)
   if (!profile) return null
-  return `user_${deviceId}_account_${profile.accountUuid}_session_${sessionId}`
+  return JSON.stringify({
+    device_id: deviceId,
+    account_uuid: profile.accountUuid,
+    session_id: sessionId
+  })
 }

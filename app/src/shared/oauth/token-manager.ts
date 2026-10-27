@@ -335,6 +335,11 @@ export class TokenManager {
     return this.credentialStore.get(providerId)
   }
 
+  /** Persist mutations to a credentials object (e.g., attribution identity in `extra`). */
+  updateCredentials(providerId: OAuthProviderId, credentials: ProviderCredentials): void {
+    this.credentialStore.set(providerId, credentials)
+  }
+
   getFlowState(providerId: OAuthProviderId): OAuthFlowState | null {
     return this.flowStates.get(providerId) ?? null
   }
