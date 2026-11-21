@@ -2,6 +2,20 @@ import express from 'express'
 import { logger } from '../logger'
 import type { UserConfig } from '../declarations'
 
+/**
+ * Send the standard auth-error JSON body so every endpoint returns the same shape.
+ */
+export function sendAuthError(
+  res: express.Response,
+  statusCode: number,
+  message: string
+): void {
+  res.status(statusCode).json({
+    type: 'error',
+    error: { type: 'authentication_error', message }
+  })
+}
+
 // --- Authentication Result Types ---
 
 export interface AuthSuccess {

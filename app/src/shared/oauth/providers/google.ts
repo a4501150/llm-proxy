@@ -9,10 +9,14 @@ export const googleProvider: OAuthProviderConfig = {
   envKeyName: 'GOOGLE_API_KEY',
   authorizeUrl: 'https://accounts.google.com/o/oauth2/v2/auth',
   tokenUrl: 'https://oauth2.googleapis.com/token',
+  // Gemini CLI public client — keep in sync with free-code's
+  // src/services/api/adapters/googleAuth.ts, which reuses the same pair.
   clientId: '681255809395-oo8ft2oprdrnp9e3aqf6av3hmdib135j.apps.googleusercontent.com',
   clientSecret: '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',
   scopes:
-    'https://www.googleapis.com/auth/cloud-platform https://www.googleapis.com/auth/userinfo.email https://www.googleapis.com/auth/userinfo.profile',
+    // generative-language is required by generativelanguage.googleapis.com;
+    // cloud-platform alone is rejected there with ACCESS_TOKEN_SCOPE_INSUFFICIENT
+    'https://www.googleapis.com/auth/generative-language https://www.googleapis.com/auth/cloud-platform https://www.googleapis.com/auth/userinfo.email https://www.googleapis.com/auth/userinfo.profile',
   callbackPath: '/oauth2callback',
   fixedRedirectUri: 'http://localhost:8085/oauth2callback',
 

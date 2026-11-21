@@ -1,7 +1,7 @@
 import type express from 'express'
 import { Readable } from 'stream'
 import { logger } from '../logger.js'
-import { validateAuthentication } from './auth.js'
+import { sendAuthError, validateAuthentication } from './auth.js'
 import { captureResponseBody, logRequestBody } from './body-log.js'
 import type { OAuthProviderId, ProviderCredentials } from './oauth/types.js'
 
@@ -48,6 +48,13 @@ export interface ReverseProxyConfig {
   transformErrorResponse?: (status: number, headers: Headers, bodyText: string) => string
   /** Prefix for request IDs (e.g., 'claude', 'openai', 'google') */
   requestIdPrefix: string
+  /**
+   * Accept any non-empty Bearer token instead of validating against configured
+   * users. Needed when the client always sends its own upstream credential
+   * (freecode's Gemini adapter hardcodes a locally-resolved GCP token).
+   * The client token is still stripped and never forwarded upstream.
+   */
+  skipClientAuth?: boolean
 }
 
 function getClientIP(req: express.Request): string {
@@ -85,13 +92,25 @@ export function createReverseProxy(config: ReverseProxyConfig): express.RequestH
 
     try {
       // Step 1: Authenticate client to proxy
-      const authResult = validateAuthentication(req, requestId, clientIP)
-      if (!authResult.success) {
-        res.status(authResult.statusCode).json({
-          type: 'error',
-          error: { type: 'authentication_error', message: authResult.error }
-        })
-        return
+      let username: string
+      if (config.skipClientAuth) {
+        const bearer = req.headers['authorization']
+        if (
+          typeof bearer !== 'string' ||
+          !bearer.startsWith('Bearer ') ||
+          bearer.slice('Bearer '.length).trim() === ''
+        ) {
+          sendAuthError(res, 401, 'Missing Bearer token')
+          return
+        }
+        username = `${config.requestIdPrefix}-client`
+      } else {
+        const authResult = validateAuthentication(req, requestId, clientIP)
+        if (!authResult.success) {
+          sendAuthError(res, authResult.statusCode, authResult.error)
+          return
+        }
+        username = authResult.username
       }
 
       // Step 2: Get OAuth/API key token
@@ -144,7 +163,7 @@ export function createReverseProxy(config: ReverseProxyConfig): express.RequestH
         url: upstreamUrl,
         method: req.method,
         authMode: resolved.type,
-        user: authResult.username
+        user: username
       })
 
       let upstream = await fetch(upstreamUrl, fetchOptions)
