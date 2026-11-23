@@ -91,15 +91,15 @@ export const setupOAuthRoutes = (app: Application): void => {
       return
     }
 
-    const input = (req.body.redirect_url || '') as string
+    const input = ((req.body.redirect_url || '') as string).trim()
     if (!input) {
       res.status(400).json({ error: 'redirect_url is required' })
       return
     }
 
     try {
-      // Accept a full redirect URL (code/state in the query or the fragment,
-      // including the code#state "collect code" format), or a bare code with
+      // Accept a full redirect URL (code/state in the query or the fragment),
+      // a bare "collect code" in the code#state format, or a bare code with
       // the state taken from the in-progress flow on the server.
       const params = new URLSearchParams()
       let bareCode: string | undefined
@@ -109,7 +109,15 @@ export const setupOAuthRoutes = (app: Application): void => {
         const fragment = url.hash.replace(/^[#?&]+/, '')
         for (const [key, value] of new URLSearchParams(fragment)) params.set(key, value)
       } catch {
-        bareCode = input
+        // Not a URL. Anthropic's collect code is `code#state`, so split the
+        // fragment off before it corrupts the code sent upstream.
+        const hashIndex = input.indexOf('#')
+        if (hashIndex >= 0) {
+          bareCode = input.slice(0, hashIndex)
+          params.set('state', input.slice(hashIndex + 1))
+        } else {
+          bareCode = input
+        }
       }
 
       const code = params.get('code') ?? bareCode
